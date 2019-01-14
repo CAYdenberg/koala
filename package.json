@@ -1,11 +1,10 @@
 {
-  "name": "koala",
+  "name": "koala-server",
   "version": "0.0.1",
   "description": "Your pouchdb backend aaS",
   "main": "index.js",
   "scripts": {
-    "test": "test",
-    "start": "node index.js"
+    "test": "test"
   },
   "repository": {
     "type": "git",
