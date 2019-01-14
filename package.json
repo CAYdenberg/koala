@@ -1,0 +1,47 @@
+{
+  "name": "koala",
+  "version": "0.0.1",
+  "description": "Your pouchdb backend aaS",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CAYdenberg/koala.git"
+  },
+  "author": "@CAYdenberg",
+  "license": "UNLICENCED",
+  "bugs": {
+    "url": "https://github.com/CAYdenberg/koala/issues"
+  },
+  "homepage": "https://github.com/CAYdenberg/koala#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "connect-mongo": "^2.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^6.2.0",
+    "errorhandler": "^1.5.0",
+    "express": "^4.16.4",
+    "express-session": "^1.15.6",
+    "http-proxy": "^1.17.0",
+    "jsonwebtoken": "^8.4.0",
+    "mongoose": "^5.3.15",
+    "morgan": "^1.9.1",
+    "passport": "^0.4.0",
+    "passport-twitter": "^1.0.4",
+    "path": "^0.12.7",
+    "popsicle": "^10.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^5.10.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-flowtype-errors": "^3.6.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-node": "^8.0.0",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "flow-bin": "^0.87.0"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "plugins": ["flowtype-errors"],
+
+  "env": {
+    "es6": true,
+    "node": true,
+    "jest": true
+  },
+
+  "extends": "standard",
+
+  "rules": {
+    "indent": [
+      "error",
+      2,
+      {"SwitchCase": 1}
+    ],
+    "linebreak-style": [
+      "error",
+      "unix"
+    ],
+    "quotes": [
+      "error",
+      "single"
+    ],
+    "semi": [
+      "error",
+      "never"
+    ],
+    "space-before-function-paren": [
+      "error",
+      "never"
+    ],
+    "no-console": [
+      "warn"
+    ],
+    "no-unused-vars": [
+      "warn"
+    ],
+    "comma-dangle": 0,
+    "flowtype-errors/show-errors": 2
+  }
+}
