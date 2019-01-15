@@ -15,7 +15,7 @@ passport.deserializeUser((id, done) => {
 passport.use(new TwitterStrategy({
   consumerKey: process.env.TWITTER_KEY,
   consumerSecret: process.env.TWITTER_SECRET,
-  callbackURL: 'http://localhost:5000/auth/twitter/callback',
+  callbackURL: `${process.env.KOALA_URI}/auth/twitter/callback`,
   passReqToCallback: true
 }, (req, accessToken, tokenSecret, profile, done) => {
   if (req.user) {
