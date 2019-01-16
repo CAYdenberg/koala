@@ -4,7 +4,6 @@ const session = require('express-session')
 const express = require('express')
 const logger = require('morgan')
 const errorHandler = require('errorhandler')
-const MongoStore = require('connect-mongo')(session)
 const mongoose = require('mongoose')
 const passport = require('passport')
 const popsicle = require('popsicle')
@@ -45,17 +44,12 @@ module.exports = function(apiDefinition) {
     process.exit()
   })
 
+  // we only use cookies/sessions for OAuth + passport - after that we are using JWTs
   app.use(session({
-    resave: true,
-    saveUninitialized: true,
     secret: SESSION_SECRET,
     cookie: {
-      maxAge: 1209600000, // two weeks in milliseconds
-    },
-    store: new MongoStore({
-      url: MONGO_URI,
-      autoReconnect: true,
-    })
+      maxAge: 60 * 1000, // one minute
+    }
   }))
   app.use(passport.initialize())
   app.use(passport.session())
@@ -67,7 +61,7 @@ module.exports = function(apiDefinition) {
   // on all auth routes, save a way to redirect back to the original http
   // referrer
   app.all('/auth*', (req, res, next) => {
-    const referrer = req.get('Referrer') || DEFAULT_REDIRECT
+    const referrer = DEFAULT_REDIRECT
     res.redirectBack = (hashpoint) => {
       res.redirect(`${referrer}/#${hashpoint}`)
     }

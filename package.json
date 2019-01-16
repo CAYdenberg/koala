@@ -1,6 +1,6 @@
 {
   "name": "koala-server",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Your pouchdb backend aaS",
   "main": "index.js",
   "scripts": {
