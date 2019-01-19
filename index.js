@@ -46,6 +46,8 @@ module.exports = function(apiDefinition) {
 
   // we only use cookies/sessions for OAuth + passport - after that we are using JWTs
   app.use(session({
+    saveUninitialized: false,
+    resave: false,
     secret: SESSION_SECRET,
     cookie: {
       maxAge: 60 * 1000, // one minute
