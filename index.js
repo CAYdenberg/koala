@@ -20,7 +20,7 @@ const {
   COUCH_URI,
   SESSION_SECRET,
   JWT_SECRET,
-  DEFAULT_REDIRECT
+  APP_ORIGIN
 } = process.env
 
 /**
@@ -35,7 +35,10 @@ module.exports = function(apiDefinition) {
   const app = express()
 
   app.use(logger('dev'))
-  app.use(cors())
+  app.use(cors({
+    origin: APP_ORIGIN,
+    credentials: true
+  }))
 
   mongoose.connect(MONGO_URI)
   mongoose.connection.on('error', (err) => {
@@ -63,7 +66,7 @@ module.exports = function(apiDefinition) {
   // on all auth routes, save a way to redirect back to the original http
   // referrer
   app.all('/auth*', (req, res, next) => {
-    const referrer = DEFAULT_REDIRECT
+    const referrer = APP_ORIGIN
     res.redirectBack = (hashpoint) => {
       res.redirect(`${referrer}/#${hashpoint}`)
     }
