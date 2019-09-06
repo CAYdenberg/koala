@@ -20,7 +20,8 @@ const {
   COUCH_URI,
   SESSION_SECRET,
   JWT_SECRET,
-  APP_ORIGIN
+  APP_ORIGIN,
+  AUTH_PARTY,
 } = process.env
 
 /**
@@ -28,7 +29,32 @@ const {
  */
 require('./passport')
 
-module.exports = function(apiDefinition) {
+const authCallback = (req, res, next) => {
+  // create JSON web token for DB authentication later
+  const payload = {
+    username: req.user.username
+  }
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' })
+
+  // attempt to create a database
+  // if they don't have already (PUT is successful) this is a "signup"
+  // if they have one (PUT fails) then this is a "login"
+  popsicle.request({
+    method: 'PUT',
+    url: `${COUCH_URI}/${req.user.username}`,
+  }).then(result => {
+    const { status, body } = result
+    if (status === 200 || status === 201) {
+      res.redirectBack(`action=signup&username=${req.user.username}&token=${token}`)
+    } else if (status === 412) {
+      res.redirectBack(`action=login&username=${req.user.username}&token=${token}`)
+    } else {
+      res.status(status).send(body)
+    }
+  }).catch(next)
+}
+
+module.exports = (apiDefinition) => {
   /**
    * Create Express server.
    */
@@ -77,30 +103,22 @@ module.exports = function(apiDefinition) {
    * OAuth authentication routes. (Sign in)
    */
   app.get('/auth/twitter', passport.authenticate('twitter'))
-  app.get('/auth/twitter/callback', passport.authenticate('twitter', { failureRedirect: '/auth/fail' }), (req, res, next) => {
-    // create JSON web token for DB authentication later
-    const payload = {
-      username: req.user.username
-    }
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' })
+  app.get(
+    '/auth/twitter/callback',
+    passport.authenticate('twitter', { failureRedirect: '/auth/fail' }),
+    authCallback
+  )
 
-    // attempt to create a database
-    // if they don't have already (PUT is successful) this is a "signup"
-    // if they have one (PUT fails) then this is a "login"
-    popsicle.request({
-      method: 'PUT',
-      url: `${COUCH_URI}/${req.user.username}`,
-    }).then(result => {
-      const { status, body } = result
-      if (status === 200 || status === 201) {
-        res.redirectBack(`action=signup&username=${req.user.username}&token=${token}`)
-      } else if (status === 412) {
-        res.redirectBack(`action=login&username=${req.user.username}&token=${token}`)
-      } else {
-        res.status(status).send(body)
+  if (AUTH_PARTY) {
+    app.get('/auth/party', (req, res, next) => {
+      req.user = {
+        username: 'authparty'
       }
-    }).catch(next)
-  })
+      next()
+    },
+      authCallback
+    )
+  }
 
   app.get('/auth/fail', (req, res) => {
     res.redirectBack('action=fail')
