@@ -12,49 +12,25 @@ const cors = require('cors')
 const httpProxy = require('http-proxy')
 const apiProxy = httpProxy.createProxyServer()
 const bodyParser = require('body-parser')
-
-const {
-  PORT,
-  NODE_ENV,
-  MONGO_URI,
-  COUCH_URI,
-  SESSION_SECRET,
-  JWT_SECRET,
-  APP_ORIGIN,
-  AUTH_PARTY,
-} = process.env
+const configurePassport = require('./passport')
 
 /**
  * API keys and Passport configuration.
  */
-require('./passport')
 
-const authCallback = (req, res, next) => {
-  // create JSON web token for DB authentication later
-  const payload = {
-    username: req.user.username
-  }
-  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' })
+module.exports = (config, apiDefinition) => {
+  const {
+    PORT,
+    NODE_ENV,
+    MONGO_URI,
+    COUCH_URI,
+    SESSION_SECRET,
+    JWT_SECRET,
+    APP_NAME,
+    APP_ORIGIN,
+    AUTH_PARTY,
+  } = config
 
-  // attempt to create a database
-  // if they don't have already (PUT is successful) this is a "signup"
-  // if they have one (PUT fails) then this is a "login"
-  popsicle.request({
-    method: 'PUT',
-    url: `${COUCH_URI}/${req.user.username}`,
-  }).then(result => {
-    const { status, body } = result
-    if (status === 200 || status === 201) {
-      res.redirectBack(`action=signup&username=${req.user.username}&token=${token}`)
-    } else if (status === 412) {
-      res.redirectBack(`action=login&username=${req.user.username}&token=${token}`)
-    } else {
-      res.status(status).send(body)
-    }
-  }).catch(next)
-}
-
-module.exports = (apiDefinition) => {
   /**
    * Create Express server.
    */
@@ -73,7 +49,9 @@ module.exports = (apiDefinition) => {
     process.exit()
   })
 
+  // set up passport/auth
   // we only use cookies/sessions for OAuth + passport - after that we are using JWTs
+  configurePassport(config)
   app.use(session({
     saveUninitialized: false,
     resave: false,
@@ -102,6 +80,33 @@ module.exports = (apiDefinition) => {
   /**
    * OAuth authentication routes. (Sign in)
    */
+  const authCallback = (req, res, next) => {
+    // create JSON web token for DB authentication later
+    const dbName = `${APP_NAME}-${req.user.username}`
+    const payload = {
+      username: req.user.username,
+      dbName
+    }
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' })
+
+    // attempt to create a database
+    // if they don't have already (PUT is successful) this is a "signup"
+    // if they have one (PUT fails) then this is a "login"
+    popsicle.request({
+      method: 'PUT',
+      url: `${COUCH_URI}/${dbName}`,
+    }).then(result => {
+      const { status, body } = result
+      if (status === 200 || status === 201) {
+        res.redirectBack(`action=signup&username=${req.user.username}&token=${token}&dbName=${dbName}`)
+      } else if (status === 412) {
+        res.redirectBack(`action=login&username=${req.user.username}&token=${token}&dbName=${dbName}`)
+      } else {
+        res.status(status).send(body)
+      }
+    }).catch(next)
+  }
+
   app.get('/auth/twitter', passport.authenticate('twitter'))
   app.get(
     '/auth/twitter/callback',
@@ -149,9 +154,11 @@ module.exports = (apiDefinition) => {
       return res.status(401).send()
     }
 
+    console.log(user)
+
     if (!user || !user.username) {
       res.status(401).send()
-    } else if (user.username !== req.params.db) {
+    } else if (user.dbName !== req.params.db) {
       res.status(401).send()
     } else {
       next()
@@ -180,6 +187,7 @@ module.exports = (apiDefinition) => {
    */
   app.listen(PORT, () => {
     console.log('App is running at http://localhost:%d in %s mode', PORT, NODE_ENV)
+    console.log('Config: ', config)
     console.log('  Press CTRL-C to stop\n')
   })
 }
