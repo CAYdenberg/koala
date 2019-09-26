@@ -154,8 +154,6 @@ module.exports = (config, apiDefinition) => {
       return res.status(401).send()
     }
 
-    console.log(user)
-
     if (!user || !user.username) {
       res.status(401).send()
     } else if (user.dbName !== req.params.db) {
