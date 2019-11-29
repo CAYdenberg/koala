@@ -1,6 +1,6 @@
 {
   "name": "koala-server",
-  "version": "0.0.5",
+  "version": "0.0.8",
   "description": "Your pouchdb backend aaS",
   "main": "index.js",
   "scripts": {
@@ -18,7 +18,7 @@
   "homepage": "https://github.com/CAYdenberg/koala#readme",
   "dependencies": {
     "body-parser": "^1.18.3",
-    "connect-mongo": "^2.0.3",
+    "connect-mongo": "^3.2.0",
     "cors": "^2.8.5",
     "dotenv": "^6.2.0",
     "errorhandler": "^1.5.0",
@@ -26,7 +26,7 @@
     "express-session": "^1.15.6",
     "http-proxy": "^1.17.0",
     "jsonwebtoken": "^8.4.0",
-    "mongoose": "^5.3.15",
+    "mongoose": "^5.7.13",
     "morgan": "^1.9.1",
     "passport": "^0.4.0",
     "passport-twitter": "^1.0.4",
